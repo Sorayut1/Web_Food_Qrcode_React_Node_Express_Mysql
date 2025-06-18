@@ -4,6 +4,7 @@ const db = require('./config/db');
 const path = require("path");
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // อนุญาตให้ frontend เข้าถึง
@@ -12,11 +13,15 @@ app.use(cors({
   credentials: true
 }));
 
+
 // ✅ Serve static files (รูปภาพ)
 app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 
+// สำหรับ Login
+const login = require('./routes/auth/auth')
+app.use("/api", login);       // /api/login
 
-
+// สำหรับ owner
 const manageCategory = require('./routes/owner/manageCategory');
 app.use('/api/owner/menu-types', manageCategory);
 
@@ -26,6 +31,8 @@ app.use('/api/owner/menu', manageMenu);
 const manageTables = require('./routes/owner/manageTables');
 app.use('/api/owner/tables', manageTables);
 
+const manageStaff = require('./routes/owner/manageStaff')
+app.use("/api/owner/staff", manageStaff); // /api/staff (owner only)
 
 module.exports = app; // <-- export app ไปใช้ใน server.js
 app.listen(3000, ()=>{

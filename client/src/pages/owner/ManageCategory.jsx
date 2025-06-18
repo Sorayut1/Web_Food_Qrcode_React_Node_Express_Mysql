@@ -96,8 +96,9 @@ const ManageCategory = () => {
   };
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         {/* Header with gradient and shadow */}
         <div className="bg-white rounded-2xl shadow-xl mb-8 p-8 border border-orange-100">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -309,6 +310,8 @@ const ManageCategory = () => {
         </div>
       </div>
     </div>
+    
+
   );
 };
 

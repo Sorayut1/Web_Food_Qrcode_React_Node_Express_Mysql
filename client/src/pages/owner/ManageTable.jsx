@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Save, X, QrCode, Table, Download, Eye } from "lucide-react";
 import axios from 'axios';
 
+
 const API_URL_TEBLE = "http://localhost:3000/api/owner/tables";
 
 const ManageTable = () => {
@@ -118,8 +119,9 @@ const handleSubmit = async () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
-            <div className="max-w-7xl mx-auto">
+
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
+            <div className="max-w-8xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-2xl shadow-xl mb-6 p-6 border-l-4 border-orange-500">
                     <div className="flex justify-between items-center">
@@ -441,6 +443,7 @@ const handleSubmit = async () => {
                 </div>
             </div>
         </div>
+
     );
 };
 

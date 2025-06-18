@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Save, X, Upload, Star } from "lucide-react";
 import axios from "axios";
 
+
 const API_URL = "http://localhost:3000/api/owner/menu"; // เปลี่ยนเป็น URL จริงของ API
 const API_URL_MENU_TYPE = "http://localhost:3000/api/owner/menu/menu_type"; // เปลี่ยนเป็น URL จริงของ API
 const API_URL_IMAGE = "http://localhost:3000/uploads/food"; // เปลี่ยนเป็น URL จริงของ API
@@ -193,8 +194,9 @@ const handleDelete = async (menuId) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
-      <div className="max-w-7xl mx-auto">
+
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
+      <div className="max-w-9xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl mb-6 p-6 border-l-4 border-orange-500">
           <div className="flex justify-between items-center">
@@ -527,6 +529,7 @@ const handleDelete = async (menuId) => {
         </div>
       </div>
     </div>
+
   );
 };
 
