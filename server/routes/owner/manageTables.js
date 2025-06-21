@@ -13,7 +13,8 @@ router.post('/', uploadQrcodeImage.single('qrcode_image'), async (req, res) => {
   const fileName = `table_${table_number}.png`;
   const qrDir = path.join(__dirname, '../../public/uploads/qrcode');
   const qrPath = path.join(qrDir, fileName);
-  const tableUrl = `http://localhost:3000/menu/table/${table_number}`;
+  const tableUrl = `http://localhost:5173/user-home/table/${table_number}`;
+
 
   try {
     await ensureDir(qrDir);
@@ -69,44 +70,7 @@ router.get('/', (req, res) => {
     res.json(results);
   });
 });
-// router.get('/:id', async (req, res) => {
-//   try {
-//     const [rows] = await db.query('SELECT * FROM tables WHERE table_id = ?', [req.params.id]);
-//     if (rows.length === 0) {
-//       return res.status(404).json({ message: 'ไม่พบโต๊ะ' });
-//     }
-//     res.json(rows[0]);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการค้นหาโต๊ะ' });
-//   }
-// });
 
-// router.delete('/:id', async (req, res) => {
-//   try {
-//     // หาไฟล์ภาพก่อนลบ
-//     const [rows] = await db.query('SELECT qrcode_image FROM tables WHERE table_id = ?', [req.params.id]);
-//     if (rows.length === 0) {
-//       return res.status(404).json({ message: 'ไม่พบโต๊ะ' });
-//     }
-
-//     const qrImage = rows[0].qrcode_image;
-//     const imagePath = path.join(__dirname, '../../public/uploads/qrcode', qrImage);
-
-//     // ลบไฟล์ภาพ QR
-//     await fs.unlink(imagePath).catch(() => {
-//       console.warn('⚠️ ไม่พบไฟล์ภาพ QR สำหรับลบ (ข้ามได้)');
-//     });
-
-//     // ลบโต๊ะจาก DB
-//     await db.execute('DELETE FROM tables WHERE table_id = ?', [req.params.id]);
-
-//     res.json({ message: '✅ ลบโต๊ะเรียบร้อยแล้ว' });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบโต๊ะ' });
-//   }
-// });
 // ลบโต๊ะและไฟล์ QR code
 
 router.delete('/:id', (req, res) => {

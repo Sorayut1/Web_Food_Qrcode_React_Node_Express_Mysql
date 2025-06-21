@@ -34,6 +34,12 @@ app.use('/api/owner/tables', manageTables);
 const manageStaff = require('./routes/owner/manageStaff')
 app.use("/api/owner/staff", manageStaff); // /api/staff (owner only)
 
+
+// USER
+const userHome = require('./routes/user/userHome');
+app.use('/api/user/home', userHome);
+
+
 module.exports = app; // <-- export app ไปใช้ใน server.js
 app.listen(3000, ()=>{
     console.log('server running at http://localhost:3000')

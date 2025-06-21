@@ -6,12 +6,19 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuthStore from './stores/authStore';
 
-import ManageCategory from './pages/owner/manageCategory';
+import ManageCategory from './pages/owner/ManageCategory';
+import ManageStaff from './pages/owner/ManageStaff';
 import ManageMenu from './pages/owner/ManageMenu';
 import ManageTable from './pages/owner/ManageTable';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/owner/Dashboard';
 import OwnerLayout from './layouts/OwnerLayout';
+
+
+// User
+import UserMenu from './pages/user/UserMenu'
+import UserProduct from './pages/user/UserProduct'
+import UserHome from './pages/user/UserHome'
 
 function App() {
   const isHydrated = useAuthStore((state) => state._hasHydrated);
@@ -35,11 +42,19 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="menu" element={<ManageMenu />} />
-          <Route path="category" element={<ManageCategory />} />
-          <Route path="table" element={<ManageTable />} />
+          <Route path="/menu" element={<ManageMenu />} />
+          <Route path="/category" element={<ManageCategory />} />
+          <Route path="/staff" element={<ManageStaff />} />
+          <Route path="/table" element={<ManageTable />} />
         </Route>
+
+          <Route path="/user-menu/table/:table_number" element={<UserMenu />} />
+          <Route path="/user-product/table/:table_number" element={<UserProduct />} />
+          <Route path="/user-home/table/:table_number" element={<UserHome />} />
+      
       </Routes>
+      
+
     </Router>
   );
 }

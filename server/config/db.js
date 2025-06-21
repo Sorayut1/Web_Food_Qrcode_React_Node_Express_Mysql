@@ -17,6 +17,5 @@ db.connect((err) => {
   }
 });
 
-const promiseDb = db.promise();  // เพิ่มบรรทัดนี้เพื่อใช้ async/await กับ query ได้
 
 module.exports = db;

@@ -17,42 +17,48 @@ import {
   Bell,
   Calendar
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 const Sidebar = ({ children, isOpen = true, onToggle }) => {
   const [collapsed, setCollapsed] = useState(!isOpen);
-  
+
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
     if (onToggle) onToggle(!collapsed);
   };
+  const navigate = useNavigate();
 
   const menuItems = [
     {
       id: 'dashboard',
       label: 'หน้าหลัก',
       icon: Home,
-      active: true
+      // active: true,
+      path: '/billing',
     },
     {
       id: 'orders',
       label: 'ออเดอร์',
       icon: ShoppingCart,
-      badge: '3'
+      badge: '3',
+      path: '/billing',
     },
     {
       id: 'menu',
       label: 'จัดการเมนู',
       icon: Utensils,
       children: [
-        { id: 'menu-list', label: 'รายการเมนู' },
-        { id: 'menu-category', label: 'หมวดหมู่' },
-        { id: 'menu-ingredients', label: 'วัตถุดิบ' }
+        { id: 'menu-list', label: 'รายการเมนู', path: '/menu', },
+        { id: 'menu-category', label: 'หมวดหมู่', path: '/category', },
+        { id: 'menu-ingredients', label: 'วัตถุดิบ', path: '/billing', }
       ]
     },
     {
       id: 'customers',
-      label: 'ลูกค้า',
-      icon: Users
+      label: 'จัดการพนักงาน',
+      icon: Users, 
+      path: '/staff'
     },
     {
       id: 'reports',
@@ -66,8 +72,10 @@ const Sidebar = ({ children, isOpen = true, onToggle }) => {
     },
     {
       id: 'promotions',
-      label: 'โปรโมชั่น',
+      label: 'จัดการโต๊ะอาหาร',
       icon: Gift
+      , path: '/table'
+
     },
     // {
     //   id: 'reviews',
@@ -127,42 +135,49 @@ const Sidebar = ({ children, isOpen = true, onToggle }) => {
         <div
           className={`
             flex items-center px-3 py-2.5 mx-2 rounded-xl cursor-pointer transition-all duration-200 group
-            ${item.active 
-              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg' 
+            ${item.active
+              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
             }
             ${isChild ? 'ml-4 py-2' : ''}
             ${collapsed && !isChild ? 'justify-center' : ''}
           `}
-          onClick={() => hasChildren ? toggleExpanded(item.id) : null}
+          onClick={() => {
+            if (hasChildren) {
+              toggleExpanded(item.id);
+            } else if (item.path) {
+              navigate(item.path);
+            }
+          }}
+
         >
           {IconComponent && (
-            <IconComponent 
-              size={20} 
-              className={`${collapsed && !isChild ? '' : 'mr-3'} ${item.active ? 'text-white' : ''}`} 
+            <IconComponent
+              size={20}
+              className={`${collapsed && !isChild ? '' : 'mr-3'} ${item.active ? 'text-white' : ''}`}
             />
           )}
-          
+
           {(!collapsed || isChild) && (
             <span className={`flex-1 font-medium ${isChild ? 'text-sm' : ''}`}>
               {item.label}
             </span>
           )}
-          
+
           {item.badge && (!collapsed || isChild) && (
             <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2">
               {item.badge}
             </span>
           )}
-          
+
           {hasChildren && (!collapsed || isChild) && (
-            <ChevronRight 
-              size={16} 
+            <ChevronRight
+              size={16}
               className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
             />
           )}
         </div>
-        
+
         {hasChildren && isExpanded && (!collapsed || isChild) && (
           <div className="mt-1 mb-2">
             {item.children.map(child => renderMenuItem(child, true))}
