@@ -1,132 +1,90 @@
 import React, { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid"; //เอาไว้สร้าง id ไม่ให้เหมือนกันป้องกันการลบ
-import {
-  ShoppingCart,
-  Search,
-  Menu,
-  X,
-  Star,
-  Clock,
-  Users,
-} from "lucide-react";
+import { v4 as uuidv4 } from "uuid"; // สร้าง id ไม่ซ้ำ
+import { Star, Clock, Users, X } from "lucide-react";
 import axios from "axios";
-import { useNavigate ,useLocation,useParams} from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // <-- เพิ่ม useNavigate
 
-import Navbar from '../../components/user/Navbar';
+import Navbar from "../../components/user/Navbar";
 import Footer from "../../components/user/Footer";
-import UserProduct from "../user/UserProduct";
 
 const API_URL_CAT = `http://localhost:3000/api/user/home/categories`;
-const API_URL_IMAGE = "http://localhost:3000/uploads/food"; // เปลี่ยนเป็น URL จริงของ API
+const API_URL_IMAGE = "http://localhost:3000/uploads/food";
 
 const UserMenu = () => {
-const { table_number } = useParams();
+  const { table_number } = useParams();
+  const navigate = useNavigate(); // <-- เพิ่ม
 
-  // console.log("เลขโต๊ะที่ได้:", table_number);
-
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
+  const [selectedCat, setSelectedCat] = useState("0"); // 0 = ทั้งหมด
+  const [categorie, setCategorie] = useState([]);
+  const [products, setProducts] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const [categorie, setCategorie] = useState([]);
-  const [selectedCat, setSelectedCat] = useState("0"); // 0 = ทั้งหมด
-  const [products, setProducts] = useState([]);
-
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const tableNumber = queryParams.get("table") || "ไม่ระบุ";
-//  console.log("เลขโต๊ะ:", table_number);  // ตรวจสอบว่าดึงมาได้หรือยัง
-  const API_URL_PRODUCT = `http://localhost:3000/api/user/home/products/${selectedCat}`;
-
-  // โหลดข้อมูลจาก API
+  // ตรวจสอบเลขโต๊ะและเช็ค API ว่าโต๊ะมีจริงไหม
   useEffect(() => {
-    fetchAll();
-  }, []);
+    if (!table_number || !/^\d+$/.test(table_number)) {
+      
+      navigate("/404");
+      return;
+    }
 
-  useEffect(() => {
-  if (table_number) {
-    localStorage.setItem("table_number", table_number);
-  }
-}, [table_number]);
-
-  useEffect(() => {
     axios
-      .get(API_URL_PRODUCT)
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.log(err));
-  }, [selectedCat]);
+      .get(`http://localhost:3000/api/user/check-table/${table_number}`)
+      .then((res) => {
+        console.log("✅ โต๊ะมีอยู่:", res.data);
+        // เซฟเลขโต๊ะถ้าเช็คผ่าน
+        localStorage.setItem("table_number", table_number);
+      })
+      .catch((err) => {
+        console.error("❌ ไม่พบโต๊ะ:", err);
+        
+        navigate("/404");
+      });
+  }, [table_number, navigate]);
 
-  const fetchAll = async () => {
+  // โหลดหมวดหมู่
+  const fetchAllCategories = async () => {
     try {
       const response = await axios.get(API_URL_CAT);
       setCategorie(response.data);
-
-      console.log("DATA:", response.data); // ตรวจสอบ
     } catch (error) {
       console.error("เกิดข้อผิดพลาดในการโหลดหมวดหมู่:", error);
     }
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    fetchAllCategories();
+  }, []);
 
-const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
-  const tableNumber = localStorage.getItem("table_number"); // ดึงเลขโต๊ะ
+  // โหลดสินค้าเมื่อ selectedCat เปลี่ยน
+  useEffect(() => {
+    const API_URL_PRODUCT = `http://localhost:3000/api/user/home/products/${selectedCat}`;
+    axios
+      .get(API_URL_PRODUCT)
+      .then((res) => setProducts(res.data))
+      .catch((err) => console.log("โหลดสินค้าไม่สำเร็จ:", err));
+  }, [selectedCat]);
 
-  if (!tableNumber) {
-    alert("❌ ไม่พบเลขโต๊ะ กรุณาเข้าสู่ระบบผ่าน QR Code อีกครั้ง");
-    return;
-  }
-
-  // โหลดข้อมูล cart ปัจจุบัน (เป็น object หรือ null)
-  let existingCart = JSON.parse(localStorage.getItem("cart")) || {
-    table_number: tableNumber,
-    items: []
-  };
-
-  // เช็คเลขโต๊ะ ถ้าไม่ตรงกันให้เคลียร์ตะกร้า
-  if (existingCart.table_number !== tableNumber) {
-    existingCart = {
-      table_number: tableNumber,
-      items: []
-    };
-  }
-
-  // สร้างรายการใหม่
-  const newItem = {
-    cartItemId: uuidv4(),
-    id: menu_id,
-    name: menu_name,
-    image: menu_image,
-    price: price
-  };
-
-  existingCart.items.push(newItem);
-
-  localStorage.setItem("cart", JSON.stringify(existingCart));
-  console.log("🛒 ตะกร้าใหม่:", existingCart);
-  alert("✅ เพิ่มเมนูลงตะกร้าเรียบร้อย");
-};
-
+  // สไลด์โชว์ (Hero Slider)
   const slides = [
     {
       id: 1,
       image:
-        "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0",
       title: "พิซซ่าสุดพิเศษ",
       subtitle: "อร่อยถึงใจ ราคาเพียง 299 บาท",
     },
     {
       id: 2,
       image:
-        "https://images.unsplash.com/photo-1646850149335-f15d028036b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1646850149335-f15d028036b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0",
       title: "อาหารไทยต้นตำรับ",
       subtitle: "รสชาติแท้ สูตรดั้งเดิม",
     },
     {
       id: 3,
       image:
-        "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?q=80&w=1415&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?q=80&w=1415&auto=format&fit=crop&ixlib=rb-4.1.0",
       title: "เบอร์เกอร์สุดอร่อย",
       subtitle: "เนื้อชั้นดี ราคาเริ่มต้น 159 บาท",
     },
@@ -140,14 +98,48 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
   }, []);
 
+  // เพิ่มเมนูลงตะกร้า
+  const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
+    const tableNumber = localStorage.getItem("table_number");
+    if (!tableNumber) {
+      alert("❌ ไม่พบเลขโต๊ะ กรุณาสแกน QR Code ใหม่");
+      return;
+    }
+
+    let existingCart = JSON.parse(localStorage.getItem("cart")) || {
+      table_number: tableNumber,
+      items: [],
+    };
+
+    // ถ้าเลขโต๊ะใน cart ไม่ตรงกับที่เก็บ ให้เคลียร์ตะกร้า
+    if (existingCart.table_number !== tableNumber) {
+      existingCart = {
+        table_number: tableNumber,
+        items: [],
+      };
+    }
+
+    const newItem = {
+      cartItemId: uuidv4(),
+      id: menu_id,
+      name: menu_name,
+      image: menu_image,
+      price: price,
+    };
+
+    existingCart.items.push(newItem);
+
+    localStorage.setItem("cart", JSON.stringify(existingCart));
+    alert("✅ เพิ่มเมนูลงตะกร้าเรียบร้อย");
+  };
   return (
     <div className="min-h-screen bg-orange-50">
-       <Navbar tableNumber={table_number} />
+      <Navbar tableNumber={table_number} />
 
       {/* Hero Slider */}
       <div className="pt-16 relative">
@@ -243,7 +235,7 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
         {/* Food Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.length === 0 ? (
-            <p>ไม่พบสินค้า</p>
+            <p className="text-center text-gray-500">ไม่พบสินค้า</p>
           ) : (
             products.map((product) => (
               <div
@@ -253,7 +245,6 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
               >
                 <img
                   src={`${API_URL_IMAGE}/${product.menu_image}`}
-                  // ✅ ลบ /public ออก
                   alt={product.menu_name}
                   className="w-full h-48 object-cover"
                 />
@@ -263,7 +254,7 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
                   </h3>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-2xl font-bold text-orange-500">
-                      ฿{product.price}
+                      ฿{parseFloat(product.price).toFixed(2)}
                     </span>
                     <div className="flex items-center text-yellow-500">
                       <Star size={16} fill="currentColor" />
@@ -277,9 +268,7 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
                     </div>
                     <div className="flex items-center">
                       <Users size={14} />
-                      <span className="ml-1">
-                        หมวด : {product.category_name}
-                      </span>
+                      <span className="ml-1">หมวด : {product.category_name}</span>
                     </div>
                   </div>
                 </div>
@@ -296,7 +285,6 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
             <div className="relative">
               <img
                 src={`${API_URL_IMAGE}/${selectedFood.menu_image}`}
-                // ✅ ลบ /public ออก
                 alt={selectedFood.menu_name}
                 className="w-full h-64 object-cover rounded-t-xl"
               />
@@ -315,7 +303,7 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
 
               <div className="flex items-center justify-between mb-4">
                 <span className="text-3xl font-bold text-orange-500">
-                  ฿{selectedFood.price}
+                  ฿{parseFloat(selectedFood.price).toFixed(2)}
                 </span>
                 <div className="flex items-center text-yellow-500">
                   <Star size={20} fill="currentColor" />
@@ -330,32 +318,26 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
                 </div>
                 <div className="flex items-center text-gray-600">
                   <Users size={18} />
-                  <span className="ml-2">
-                    หมวด : {selectedFood.category_name}
-                  </span>
+                  <span className="ml-2">หมวด : {selectedFood.category_name}</span>
                 </div>
               </div>
 
               <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  รายละเอียด
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {selectedFood.detail_menu}
-                </p>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">รายละเอียด</h3>
+                <p className="text-gray-600 leading-relaxed">{selectedFood.detail_menu}</p>
               </div>
 
               <div className="flex gap-4">
                 <button
                   className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 px-6 rounded-lg font-medium transition-colors"
-                  onClick={() => {
+                  onClick={() =>
                     handleAddToOrder(
                       selectedFood.menu_id,
                       selectedFood.menu_name,
                       selectedFood.menu_image,
-                      selectedFood.price,
-                    );
-                  }}
+                      selectedFood.price
+                    )
+                  }
                 >
                   เพิ่มลงตะกร้า
                 </button>
@@ -367,7 +349,7 @@ const handleAddToOrder = (menu_id, menu_name, menu_image, price) => {
           </div>
         </div>
       )}
-      {/* <UserProduct /> */}
+
       <Footer />
     </div>
   );

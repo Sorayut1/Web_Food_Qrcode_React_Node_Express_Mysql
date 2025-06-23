@@ -42,7 +42,7 @@ const Sidebar = ({ children, isOpen = true, onToggle }) => {
       label: 'ออเดอร์',
       icon: ShoppingCart,
       badge: '3',
-      path: '/billing',
+      path: '/orders',
     },
     {
       id: 'menu',
@@ -188,10 +188,11 @@ const Sidebar = ({ children, isOpen = true, onToggle }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
+    <div className="flex bg-gradient-to-br from-orange-50 to-orange-100">
       {/* Sidebar */}
       <div className={`
         bg-white shadow-2xl transition-all duration-300 ease-in-out flex flex-col
+        sticky top-0 h-screen
         ${collapsed ? 'w-16' : 'w-64'}
       `}>
         {/* Header */}

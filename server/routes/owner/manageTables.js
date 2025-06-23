@@ -111,4 +111,34 @@ router.delete('/:id', (req, res) => {
   });
 });
 
+// เช็คว่าโต๊ะมีอยู่หรือไม่: /api/tables/check/:table_number
+router.get('/check/:table_number', (req, res) => {
+  const { table_number } = req.params;
+
+  // ตรวจสอบว่าเป็นตัวเลข
+  if (isNaN(table_number)) {
+    return res.status(400).json({ message: 'เลขโต๊ะไม่ถูกต้อง' });
+  }
+
+  db.query(
+    'SELECT * FROM tables WHERE table_number = ?',
+    [table_number],
+    (err, results) => {
+      if (err) {
+        console.error('❌ ดึงข้อมูลโต๊ะล้มเหลว:', err);
+        return res.status(500).json({ message: '❌ ดึงข้อมูลโต๊ะล้มเหลว' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: '❌ ไม่พบโต๊ะในระบบ' });
+      }
+
+      res.json({
+        message: '✅ พบโต๊ะในระบบ',
+        table: results[0],
+      });
+    }
+  );
+});
+
 module.exports = router;

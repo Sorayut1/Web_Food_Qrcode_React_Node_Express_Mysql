@@ -1,43 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiSearch, FiClock, FiStar, FiShoppingCart } from 'react-icons/fi';
 import Navbar from '../../components/user/Navbar';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate} from "react-router-dom";
+import axios from 'axios';
 
 const UserHome = () => {
-  // ข้อมูลเมนูตัวอย่าง
+  const { table_number } = useParams();
+
+  const [tableInfo, setTableInfo] = useState(null);
+  const [loadingTable, setLoadingTable] = useState(true);
+  const [errorTable, setErrorTable] = useState(null);
+const navigate = useNavigate(); // เพิ่มบรรทัดนี้
+  // ตัวอย่างเมนูยอดนิยม
   const popularMenus = [
-    {
-      id: 1,
-      name: 'ข้าวผัดปู',
-      price: 120,
-      image: '/images/crab-fried-rice.jpg',
-      time: '15-20 นาที',
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      name: 'ต้มยำกุ้ง',
-      price: 150,
-      image: '/images/tom-yum.jpg',
-      time: '20-25 นาที',
-      rating: 4.7,
-    },
-    {
-      id: 3,
-      name: 'ผัดไทย',
-      price: 90,
-      image: '/images/pad-thai.jpg',
-      time: '10-15 นาที',
-      rating: 4.5,
-    },
-    {
-      id: 4,
-      name: 'ส้มตำไทย',
-      price: 80,
-      image: '/images/som-tum.jpg',
-      time: '5-10 นาที',
-      rating: 4.6,
-    },
+    { id: 1, name: 'ข้าวผัดปู', price: 120, image: '/images/crab-fried-rice.jpg', time: '15-20 นาที', rating: 4.8 },
+    { id: 2, name: 'ต้มยำกุ้ง', price: 150, image: '/images/tom-yum.jpg', time: '20-25 นาที', rating: 4.7 },
+    { id: 3, name: 'ผัดไทย', price: 90, image: '/images/pad-thai.jpg', time: '10-15 นาที', rating: 4.5 },
+    { id: 4, name: 'ส้มตำไทย', price: 80, image: '/images/som-tum.jpg', time: '5-10 นาที', rating: 4.6 },
   ];
 
   const categories = [
@@ -48,10 +27,50 @@ const UserHome = () => {
     { id: 5, name: 'เครื่องดื่ม', icon: '🍹' },
     { id: 6, name: 'ของหวาน', icon: '🍰' },
   ];
-const { table_number } = useParams();
+
+  useEffect(() => {
+    // ตรวจสอบ format ของ table_number ก่อน
+    if (!table_number || !/^\d+$/.test(table_number)) {
+      console.error("❌ เลขโต๊ะไม่ถูกต้อง:", table_number);
+      navigate("/404");
+      return;
+    }
+
+    // เรียก API ตรวจสอบสถานะโต๊ะ (แก้ endpoint ให้ตรงกับที่ใช้ในส่วนอื่น)
+    axios.get(`http://localhost:3000/api/user/check-table/${table_number}`)
+      .then(res => {
+        console.log("✅ โต๊ะมีอยู่:", res.data);
+        if (res.data && res.data.table) {
+          setTableInfo(res.data.table);
+          setErrorTable(null);
+          // เซฟเลขโต๊ะถ้าเช็คผ่าน
+          localStorage.setItem("table_number", table_number);
+        } else {
+          console.error("❌ โต๊ะไม่ถูกต้อง");
+          navigate("/404");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ ไม่พบโต๊ะ:", err);
+        navigate("/404");
+      })
+      .finally(() => setLoadingTable(false));
+  }, [table_number, navigate]); // เพิ่ม navigate ใน dependency array
+
   return (
     <div className="min-h-screen bg-orange-50">
-          <Navbar tableNumber={table_number} />
+      <Navbar tableNumber={table_number} />
+
+      <div className="container mx-auto px-4 py-2">
+        {loadingTable && <p className="text-center text-gray-600">กำลังโหลดข้อมูลโต๊ะ...</p>}
+        {errorTable && <p className="text-center text-red-600 font-semibold">{errorTable}</p>}
+        {tableInfo && (
+          <p className="text-center text-green-600 font-semibold mb-4">
+            ✅ โต๊ะหมายเลข {tableInfo.table_number} พร้อมใช้งาน
+          </p>
+        )}
+      </div>
+
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16">
         <div className="container mx-auto px-4 text-center">
